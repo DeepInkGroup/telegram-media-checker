@@ -1,0 +1,7 @@
+users.json
+users.json.tmp
+settings.json
+settings.json.tmp
+bot.log
+bot-error.log
+node_modules/

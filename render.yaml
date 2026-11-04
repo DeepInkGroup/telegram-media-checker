@@ -1,0 +1,16 @@
+services:
+  - type: worker
+    name: telegram-media-checker
+    runtime: node
+    plan: 0.5c-512mb
+    buildCommand: npm ci
+    startCommand: npm start
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      name: bot-data
+      mountPath: /var/data
+      sizeGB: 1

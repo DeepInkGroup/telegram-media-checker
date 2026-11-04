@@ -1,0 +1,31 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { quota, consume, setLimit, resetUsage } from './quota.mjs';
+test('limits, plan changes and Tehran midnight reset', () => {
+  const user = {};
+  const today = new Date('2026-10-29T19:00:00Z');
+  for (let i = 0; i < 50; i++) assert.equal(consume(user, today), true);
+  assert.equal(consume(user, today), false);
+  user.plan = 'pro';
+  for (let i = 50; i < 200; i++) assert.equal(consume(user, today), true);
+  assert.equal(consume(user, today), false);
+  user.plan = 'free';
+  assert.equal(consume(user, today), false);
+  assert.equal(quota(user, new Date('2026-10-29T20:30:00Z')).used, 0);
+  assert.equal(consume(user, new Date('2026-10-29T20:30:00Z')), true);
+});
+test('custom limits and resets preserve plan and lifetime usage', () => {
+  const user = { plan: 'pro', mediaCount: 7 };
+  const now = new Date('2026-10-29T19:00:00Z');
+  assert.equal(setLimit('pro', 1), true);
+  assert.equal(consume(user, now), true);
+  assert.equal(consume(user, now), false);
+  assert.equal(setLimit('pro', -1), false);
+  assert.equal(setLimit('unknown', 2), false);
+  resetUsage(user);
+  assert.equal(quota(user, now).used, 0);
+  assert.equal(user.plan, 'pro');
+  assert.equal(user.mediaCount, 7);
+  assert.equal(consume(user, now), true);
+  setLimit('pro', 200);
+});
